@@ -26,7 +26,7 @@ class Player(pygame.sprite.Sprite):
         self.image = self.original_image
         self.rect = self.image.get_rect().move(100,100)
         self.angle = 0
-        self.rotSpeed = 0.1
+        self.rotSpeed = 2.5
         self.pos = [50,50]
         self.pos_x = self.pos[0]
         self.pos_y = self.pos[1]
@@ -40,11 +40,11 @@ class Player(pygame.sprite.Sprite):
 
     def update(self, pressed_keys):
         if pressed_keys[K_UP]:
-            self.pos_x -= self.velocity(0.2)[0]
-            self.pos_y -= self.velocity(0.2)[1]
+            self.pos_x -= self.velocity(0.4)[0] * dt
+            self.pos_y -= self.velocity(0.4)[1] * dt
         if pressed_keys[K_DOWN]:
-            self.pos_x += self.velocity(0.2)[0]
-            self.pos_y += self.velocity(0.2)[1]
+            self.pos_x += self.velocity(0.4)[0] * dt
+            self.pos_y += self.velocity(0.4)[1] * dt
 
         if pressed_keys[K_LEFT]:
             self.image = pygame.transform.rotate(self.original_image, self.angle)
@@ -71,7 +71,7 @@ player = Player()
 
 running = True
 clock = pygame.time.Clock()
-clock.tick(30)
+dt = clock.tick(60)
 while running:
     for event in pygame.event.get():
         if event.type == KEYDOWN:
