@@ -155,6 +155,8 @@ def ex54():
             p2_score = 0
             p1_highestCard = 0
             p2_highestCard = 0
+            p1_highestCardPair = 0
+            p2_highestCardPair = 0
             p1_valueNumbers = []
             p2_valueNumbers = []
             # Go through each of the five hands
@@ -183,6 +185,7 @@ def ex54():
                             value = 14
                 else:
                     value = int(card[0])
+                p1_valueNumbers.append(value - 1)
                 p1_numbers[value - 2] += 1
                 if value > p1_highestCard:
                     p1_highestCard = value  # High card
@@ -198,22 +201,30 @@ def ex54():
                 else:
                     p1_score = 17  # Straight
             else:
-                print(p1_numbers)
                 for number in p1_numbers:
                     if number == 2:
                         if p1_score == 14:
                             p1_score = 15  # Two pair
+                            if p1_numbers.index(number) > p1_highestCardPair:
+                                p1_highestCardPair = p1_numbers.index(number)
                         elif p1_score == 16:
                             p1_score = 19  # Full house
+                            if p1_numbers.index(number) > p1_highestCardPair:
+                                p1_highestCardPair = p1_numbers.index(number)
                         else:
                             p1_score = 14  # One pair
+                            p1_highestCardPair = p1_numbers.index(number)
                     if number == 3:
                         if p1_score == 14:
                             p1_score = 19  # Full house
+                            if p1_numbers.index(number) > p1_highestCardPair:
+                                p1_highestCardPair = p1_numbers.index(number)
                         else:
                             p1_score = 16  # Three of a kind
+                            p1_highestCardPair = p1_numbers.index(number)
                     if number == 4:
                         p1_score = 20  # Four of a kind
+                        p1_highestCardPair = p1_numbers.index(number)
 
             for card in p2_hands:
                 match card[1]:
@@ -238,6 +249,9 @@ def ex54():
                             value = 13
                         case "A":
                             value = 14
+                else:
+                    value = int(card[0])
+                p2_valueNumbers.append(value - 1)
                 p2_numbers[value - 2] += 1
                 if value > p2_highestCard:
                     p2_highestCard = value  # High card
@@ -258,24 +272,66 @@ def ex54():
                     if number == 2:
                         if p2_score == 14:
                             p2_score = 15  # Two pair
+                            if p2_numbers.index(number) > p2_highestCardPair:
+                                p2_highestCardPair = p2_numbers.index(number)
                         elif p2_score == 16:
                             p2_score = 19  # Full house
+                            if p2_numbers.index(number) > p2_highestCardPair:
+                                p2_highestCardPair = p2_numbers.index(number)
                         else:
                             p2_score = 14  # One pair
+                            p2_highestCardPair = p2_numbers.index(number)
                     if number == 3:
                         if p2_score == 14:
                             p2_score = 19  # Full house
+                            if p2_numbers.index(number) > p2_highestCardPair:
+                                p2_highestCardPair = p2_numbers.index(number)
                         else:
                             p2_score = 16  # Three of a kind
+                            p2_highestCardPair = p2_numbers.index(number)
                     if number == 4:
                         p2_score = 20  # Four of a kind
+                        p2_highestCardPair = p2_numbers.index(number)
 
             if p1_score > p2_score:
                 p1_wins += 1
-            elif p1_score == p2_score:
-                if p1_highestCard > p2_highestCard:
+            elif p1_score == p2_score:  # If both players have the same win type
+                if p1_highestCardPair != 0:
+                    if p1_highestCardPair > p2_highestCardPair:
+                        p1_wins += 1
+                    elif p1_highestCard == p2_highestCard:  # If both players have the same pair
+                        p1_valueNumbers.sort()
+                        p2_valueNumbers.sort()  # Check which card is higher of the first card that is different
+                        if p1_valueNumbers[-2] == p2_valueNumbers[-2]:
+                            if p1_valueNumbers[-3] == p2_valueNumbers[-3]:
+                                if p1_valueNumbers[-4] == p2_valueNumbers[-4]:
+                                    if p1_valueNumbers[-5] > p2_valueNumbers[-5]:
+                                        p1_wins += 1
+                                elif p1_valueNumbers[-4] > p2_valueNumbers[-4]:
+                                    p1_wins += 1
+                            elif p1_valueNumbers[-3] > p2_valueNumbers[-3]:
+                                p1_wins += 1
+                        elif p1_valueNumbers[-2] > p2_valueNumbers[-2]:
+                            p1_wins += 1
+                    elif p1_highestCard > p2_highestCard:
+                        p1_wins += 1
+                elif p1_highestCard == p2_highestCard:
+                    p1_valueNumbers.sort()
+                    p2_valueNumbers.sort()  # Check which card is higher of the first card that is different
+                    if p1_valueNumbers[-2] == p2_valueNumbers[-2]:
+                        if p1_valueNumbers[-3] == p2_valueNumbers[-3]:
+                            if p1_valueNumbers[-4] == p2_valueNumbers[-4]:
+                                if p1_valueNumbers[-5] > p2_valueNumbers[-5]:
+                                    p1_wins += 1
+                            elif p1_valueNumbers[-4] > p2_valueNumbers[-4]:
+                                p1_wins += 1
+                        elif p1_valueNumbers[-3] > p2_valueNumbers[-3]:
+                            p1_wins += 1
+                    elif p1_valueNumbers[-2] > p2_valueNumbers[-2]:
+                        p1_wins += 1
+                elif p1_highestCard > p2_highestCard:
                     p1_wins += 1
-            print(str(p1_score) + " - " + str(p2_score) + " || " + str(p1_highestCard) + " - " + str(p2_highestCard))
+            print(str(lines.index(line)) + "| " + str(p1_score) + " - " + str(p2_score) + " || " + str(p1_highestCard) + " - " + str(p2_highestCard) + " || " + str(p1_wins) + " || " + str(p1_highestCardPair) + " - " + str(p2_highestCardPair))
     print("Result: " + str(p1_wins))
 
 
