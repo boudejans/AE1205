@@ -1,6 +1,5 @@
-import string
 import os
-import pandas as pd
+from matplotlib import pyplot as plt
 
 # Get the character frequency of a list of words
 def GetFrequency(txt):
@@ -22,12 +21,14 @@ def GetLanguage(folder):
     langNames = []
     langFreqs = []
 
-    fnames = os.listdir(folder)
+    fileNames = os.listdir(folder)
+    if '.DS_Store' in fileNames:
+        fileNames.remove('.DS_Store')
 
-    for folderName in fnames:
-        langNames.append((folderName))
+    for fileName in fileNames:
+        langNames.append(fileName)
 
-        with open(folder + "/" + folderName, 'r', encoding='latin1') as f:
+        with open(folder + "/" + fileName, 'r', encoding='latin1') as f:
             content = f.read().split()
             langFreqs.append(GetFrequency(content))
 
@@ -42,28 +43,37 @@ def GetDifference(freq1, freq2):
 
     return sum(diff)
 
-# Get the index of the minimal difference value
-def MinValueIndex(list):
-    j = 1
-    for i in range(len(list)):
-        if j > list[i]:
-            j = list[i]
-            index = i
-
-    return index
-
 # Test character frequency of test file
 fileName = input("Enter the name of the text file I should predict the language of: ")
-with open(fileName, 'r', encoding='latin1') as f:
-    fileText = f.read().split()
+with open(fileName, encoding='utf-8', errors='ignore') as file:
+    fileText = file.read().split()
 fileFrequency = GetFrequency(fileText)
 
 # Test character frequeny of baseline text files
 langNames, langFreqs = GetLanguage("./data")
+
+# Calculate the difference between the test file and each of the 4 languages
 differences = []
 for i in range(len(langNames)):
     differences.append(GetDifference(fileFrequency, langFreqs[i]))
 
 # Compare character frequency of test file with language baselines
-closestLanguage = langNames[MinValueIndex(differences)]
-print("This language is probably: " + closestLanguage.split(".")[0])
+closestLanguageIndex = differences.index(min(differences))
+closestLanguage = langNames[closestLanguageIndex]
+print("This language is probably: " + closestLanguage.split('.')[0])
+
+# Plot the 4 language frequencies as well as the test frequencies
+j = 0
+xbar = range(26)
+for i in range(321,325):
+    plt.subplot(i)
+    plt.ylim(0, 0.2)
+    plt.title(langNames[j])
+    plt.bar(xbar, langFreqs[j][97:123], 0.6, color='r')
+    j += 1
+plt.subplot(325)
+plt.title('Test frequency')
+plt.bar(xbar, fileFrequency[97:123], 0.6, color='c')
+plt.ylim(0, 0.2)
+plt.tight_layout()
+plt.show()
