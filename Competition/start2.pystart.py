@@ -19,8 +19,8 @@ SCREEN_HEIGHT = 720
 density = 1.225
 g0 = 30
 
-popSize = (5, 2)
-weights = numpy.random.uniform(-0.5, 0.5, size=popSize)
+popSize = (20, 2)
+weights = numpy.random.uniform(-1, 1, size=popSize)
 bots = []
 
 walls = []
@@ -49,6 +49,13 @@ class Food(pygame.sprite.Sprite):
         self.image = self.original_image
         self.rect = self.image.get_rect().move(x, y)
 
+class Door(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super(Door, self).__init__()
+        self.original_image = pygame.image.load("door.png").convert()
+        self.original_image = pygame.transform.scale(self.original_image, (120, 80))
+        self.image = self.original_image
+        self.rect = self.image.get_rect().move(x, y)
 
 class Player(pygame.sprite.Sprite):
     def __init__(self):
@@ -57,8 +64,8 @@ class Player(pygame.sprite.Sprite):
         self.original_image = pygame.transform.scale(self.original_image, (30, 30))
         self.image = self.original_image
         self.bot = False
-        self.rect = self.image.get_rect().move(100, 100)
-        self.pos = [100, 100]
+        self.rect = self.image.get_rect().move(800, 100)
+        self.pos = [800, 100]
         self.velocityVector = pygame.math.Vector2(0,0)
         self.velocity = 0.02
         self.mass = 1
@@ -175,8 +182,9 @@ class Bot(pygame.sprite.Sprite):
             self.rect = newRect
             self.pos_y = newY
         elif self.velocityVector.y < 0:
-            self.pos_y = newY
-            self.rect = newRect
+            if self.rect.top > rect_list[newRect.collidelist(rect_list)].bottom:
+                self.pos_y = newY
+                self.rect = newRect
         else:
             self.velocityVector.y = 0
             self.jumpCount = 0
@@ -189,10 +197,10 @@ class Bot(pygame.sprite.Sprite):
         hiddenLayer.append(x)
         hiddenLayer.append(y)
         outputs = [0] * 2
-        inputs.append(self.pos_x - player.pos_x)
-        inputs.append(self.pos_y - player.pos_y)
-        outputs[0] = inputs[0] * x / 6
-        outputs[1] = inputs[1] * y / 30
+        inputs.append(self.pos_x - door.rect.centerx)
+        inputs.append(self.pos_y - door.rect.centery)
+        outputs[0] = inputs[0] * x / 10
+        outputs[1] = inputs[1] * y / 50
         # inputs.append(self.pos_x - player.pos_x)
         # inputs.append(self.pos_y - player.pos_y)
         # inputs.append(player.pos_x)
@@ -208,9 +216,9 @@ class Bot(pygame.sprite.Sprite):
 
 def mutate(receivedWeights, largeMutation):
     newWeights = receivedWeights
-    maxMutation = 0.2
+    maxMutation = 1
     if largeMutation:
-        maxMutation = 0.5
+        maxMutation = 2
     i = 0
     for indvWeight in newWeights:
         newWeights[i] += random.uniform(-maxMutation + generation/100, maxMutation - generation/100)
@@ -228,8 +236,6 @@ pygame.init()
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
-player = Player()
-
 score = 0
 
 weights = numpy.random.uniform(0, 1, size=popSize)
@@ -237,7 +243,8 @@ font = pygame.font.Font(None, 30)
 text = font.render(str("Empty"), True, (0, 0, 0))
 
 for generation in range(50):
-    print(weights)
+    player = Player()
+    door = Door(100, 180)
     walls = []
     for i in range(11):
         walls.append(Wall(i*128, 650, "Floor"))
@@ -249,6 +256,8 @@ for generation in range(50):
         walls.append(Wall(0, x*128, "Side"))
     for y in range(10):
         walls.append(Wall(1336, y*128, "Side 2"))
+    for z in range(11):
+        walls.append(Wall(z*128, 0, "Floor"))
     food = instantiateFood()
     bots = []
     for instance in weights:
@@ -260,16 +269,18 @@ for generation in range(50):
         # bot.bot = True
         bots.append(bot)
 
-    fitness = [0] * 10
+    fitness = [0] * 20
 
     running = True
     clock = pygame.time.Clock()
     # dt = clock.tick(60)/1000
     dt = 0.1
     startTime = pygame.time.get_ticks()
-
+    i = 0
     while running:
+        i += 1
         screen.fill((255, 255, 255))
+        screen.blit(door.image, door.rect)
         for wall in walls:
             screen.blit(wall.image, wall.rect)
         screen.blit(food.image, food.rect)
@@ -277,7 +288,7 @@ for generation in range(50):
             botWeights = weights[bots.index(bot)]
             bot.botUpdate(botWeights[0], botWeights[1])
             screen.blit(bot.image, bot.rect)
-            fitness[bots.index(bot)] = 1 / ((pygame.math.Vector2(player.pos_x, player.pos_y).distance_to((bot.pos_x, bot.pos_y))) ** 2) / 10
+            # fitness[bots.index(bot)] = 1 / ((pygame.math.Vector2(player.pos_x, player.pos_y).distance_to((bot.pos_x, bot.pos_y))) ** 2) / 10
             if not bot.shadow:
                 if bot.rect.colliderect(player.rect):
                     player.kill()
@@ -285,13 +296,16 @@ for generation in range(50):
                     pygame.display.flip()
                     pygame.quit()
                     # exit()
+            if bot.rect.colliderect(door.rect):
+                bot.kill()
         # if pygame.time.get_ticks() - startTime >= (10000 + generation*200):
-        if score >= 5:
+        if player.rect.colliderect(door.rect):
+            player.kill()
             score = 0
             highestFitness = 0
             bestBot = 0
             for bot in bots:
-                fitness[bots.index(bot)] += 1/((pygame.math.Vector2(player.pos_x, player.pos_y).distance_to((bot.pos_x, bot.pos_y)))**2)
+                fitness[bots.index(bot)] += 1/(pygame.math.Vector2(player.pos_x, player.pos_y).distance_to((door.rect.centerx, door.rect.centery - 20)))*100
                 botFitness = fitness[bots.index(bot)]
                 if botFitness > highestFitness:
                     text = font.render(str(weights[bots.index(bot)]), True, (0,0,0))
@@ -303,21 +317,21 @@ for generation in range(50):
                 i += 1
             break
 
-        if (pygame.time.get_ticks() - startTime) % 1000 <= 5:
+        if i % 100 == 0:
             print("Huh: " + str(pygame.time.get_ticks() - startTime))
             highestFitness = 0
             bestBot = 0
             for bot in bots:
-                fitness[bots.index(bot)] += 1/((pygame.math.Vector2(player.pos_x, player.pos_y).distance_to((bot.pos_x, bot.pos_y)))**2)
+                fitness[bots.index(bot)] += 1/(pygame.math.Vector2(player.pos_x, player.pos_y).distance_to((door.rect.centerx, door.rect.centery - 20)))
                 botFitness = fitness[bots.index(bot)]
                 if botFitness > highestFitness:
                     text = font.render(str(weights[bots.index(bot)]), True, (0,0,0))
                     bestBot = bots.index(bot)
                     highestFitness = fitness[bots.index(bot)]
             i = 0
+            print(highestFitness)
             for weight in weights:
                 weights[i] = mutate(weights[bestBot], False)
-                print(weights[i])
                 i += 1
 
         pressed_keys = pygame.key.get_pressed()
