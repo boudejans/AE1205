@@ -11,10 +11,14 @@ numberOfRows = 20
 numberOfColumns = 10
 brickSize = 40
 currentTetromino = None
-dt = 300
+dt = 150
 timePassed = 0
-grid = np.array([[0] * numberOfColumns] * numberOfRows)
+grid = np.array([[8] * (numberOfColumns + 2)])
+grid = np.append(grid, [[8] + [0] * numberOfColumns + [8]] * numberOfRows, axis=0)
+grid = np.append(grid, [[8] * (numberOfColumns + 2)], axis=0)
+# print(grid)
 # grid = np.random.randint(0, 8, (numberOfRows, numberOfColumns))
+# grid = np.array([[8] * numberOfColumns] + [[8] * numberOfColumns])
 bricks = [np.array([[1, 1, 1, 1]]), np.array([[2, 0, 0], [2, 2, 2]]), np.array([[0, 0, 3], [3, 3, 3]]), np.array([[4, 4], [4, 4]]), np.array([[0, 5, 5], [5, 5, 0]]), np.array([[0, 6, 0], [6, 6, 6]]), np.array([[7, 7, 0], [0, 7 ,7]])]
 
 colors = {
@@ -24,11 +28,12 @@ colors = {
     4: "yellow",
     5: "green",
     6: "purple",
-    7: "red"
+    7: "red",
+    8: "grey"
 }
 
-screenWidth = brickSize * numberOfColumns
-screenHeight = brickSize * numberOfRows
+screenWidth = brickSize * (numberOfColumns + 2)
+screenHeight = brickSize * (numberOfRows + 2)
 
 screen = pygame.display.set_mode((screenWidth, screenHeight))
 
@@ -36,15 +41,21 @@ class tetromino():
     def __init__(self, shape):
         super(tetromino, self).__init__()
         self.xPos = 3
-        self.yPos = 0
+        self.yPos = 1
         self.shape = shape
 
 def drawGrid():
     screen.fill("black")
+    # for k in range(0, numberOfColumns + 2):
+    #     pygame.draw.rect(screen, colors[8], pygame.Rect(k * brickSize, 0, brickSize - 1, brickSize - 1))
+    #     pygame.draw.rect(screen, colors[8], pygame.Rect(k * brickSize, (numberOfRows + 1) * brickSize, brickSize - 1, brickSize - 1))
+    # for l in range(1, numberOfRows + 1):
+    #     pygame.draw.rect(screen, colors[8], pygame.Rect(0, l * brickSize, brickSize - 1, brickSize - 1))
+    #     pygame.draw.rect(screen, colors[8], pygame.Rect((numberOfColumns + 1) * brickSize, l * brickSize, brickSize - 1, brickSize - 1))
     j = 0
-    for column in grid:
+    for row in grid:
         i = 0
-        for brick in column:
+        for brick in row:
             if brick != 0:
                 # pygame.draw.rect(screen, colors[brick], )
                 pygame.draw.rect(screen, colors[brick], pygame.Rect(i * brickSize, j * brickSize, brickSize - 1, brickSize - 1))
@@ -62,11 +73,11 @@ def drawCurrent(tetromino):
 def checkCollision(tetromino, dx = 0, dy = 0):
     rows, cols = tetromino.shape.shape
     collision = False
-    if dx == -1 and tetromino.xPos == 0:
+    if dx == -1 and tetromino.xPos == 1:
         return True
-    if dx == 1 and tetromino.xPos * brickSize == screenWidth - cols*brickSize:
+    if dx == 1 and tetromino.xPos * brickSize == screenWidth - brickSize - (cols)*brickSize:
         return True
-    if dy == 1 and tetromino.yPos * brickSize == screenHeight - rows*brickSize:
+    if dy == 1 and tetromino.yPos * brickSize == screenHeight - brickSize - (rows)*brickSize:
         return True
     for row in range(0, rows):
         for col in range(0, cols):
@@ -119,6 +130,8 @@ while running:
         newGrid = grid
         for row in grid:
             isFull = True
+            if rowIndex == 0 or rowIndex == numberOfRows + 1:
+                isFull = False
             for brick in row:
                 if brick == 0:
                     isFull = False
@@ -126,7 +139,7 @@ while running:
             #     np.append(newGrid, grid[rowIndex])
             if isFull:
                 newGrid = np.delete(newGrid, rowIndex, axis=0)
-                newGrid = np.insert(newGrid, 0, np.array([0] * numberOfColumns), 0)
+                newGrid = np.insert(newGrid, 1, np.array([8] + [0] * numberOfColumns + [8]), 0)
                 isFull = False
             rowIndex += 1
         grid = newGrid
