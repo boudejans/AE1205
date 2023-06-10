@@ -98,7 +98,7 @@ class Player(pygame.sprite.Sprite):
 
 # Class object for the AI
 class Bot(pygame.sprite.Sprite):
-    def __init__(self, shadowBot = False):
+    def __init__(self, x, y, shadowBot = False):
         super(Bot, self).__init__()
         # Check if the AI is a shadow bot (a bot just for training which is not visible)
         if not shadowBot:
@@ -113,7 +113,7 @@ class Bot(pygame.sprite.Sprite):
             self.shadow = True
         self.rect = self.image.get_rect().move(600, 600)
         # Constants
-        self.pos = [1800, 300]
+        self.pos = [x, y]
         self.velocity = 0.0001
         self.maxVelocity = 200
         self.velocityVector = pygame.math.Vector2(0, 0)
@@ -243,9 +243,9 @@ for generation in range(50):
     bots = []
     for i, instance in enumerate(weights):
         if i == 0:
-            bot = Bot(False)
+            bot = Bot(main.SCREEN_WIDTH - 100, main.SCREEN_HEIGHT - 800, False)
         else:
-            bot = Bot(True)
+            bot = Bot(main.SCREEN_WIDTH - 100, main.SCREEN_HEIGHT - 800, True)
         bots.append(bot)
     fitness = [0] * popSize[0]  # A list of fitness, a score for each bot for how well it is performing
     running = True
