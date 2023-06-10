@@ -13,7 +13,7 @@ from pygame.locals import (
 class Player(pygame.sprite.Sprite):
     def __init__(self):
         super(Player, self).__init__()
-        self.original_image = pygame.image.load("player.png")
+        self.original_image = pygame.image.load("Competition/player.png")
         self.original_image = pygame.transform.scale(self.original_image, (30, 30))
         self.image = self.original_image
         self.bot = False
@@ -85,11 +85,11 @@ class Bot(pygame.sprite.Sprite):
     def __init__(self, shadowBot = False):
         super(Bot, self).__init__()
         if not shadowBot:
-            self.original_image = pygame.image.load("enemy.png")
+            self.original_image = pygame.image.load("Competition/enemy.png")
             self.original_image = pygame.transform.scale(self.original_image, (30, 30))
             self.image = self.original_image
         else:
-            self.original_image = pygame.image.load("Empty.png")
+            self.original_image = pygame.image.load("Competition/Empty.png")
             self.original_image = pygame.transform.scale(self.original_image, (30, 30))
             self.image = self.original_image
         self.rect = self.image.get_rect().move(600, 600)

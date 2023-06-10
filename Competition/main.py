@@ -1,5 +1,5 @@
 import pygame
-import World
+import world
 
 # Init pygame and the screen
 pygame.init()
@@ -11,18 +11,15 @@ info = pygame.display.Info()
 SCREEN_WIDTH = info.current_w
 SCREEN_HEIGHT = info.current_h
 
-# running = False
-# while not running:
+# Import and show the main menu
 import mainMenu
 
-# mainMenu.running = True
 # Create the world and receive the walls and decorations
-World.run()
-walls = World.walls
-decorations = World.decorations
+world.run()
+walls = world.walls
+decorations = world.decorations
 
-# Run the player and enemy controller
+# Run the player and enemy controller when the play button is pressed
 def start():
-    import Controller
-# Controller.play()
+    import controller
 
